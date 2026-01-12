@@ -7,6 +7,18 @@ import { ThemeProvider } from "./state/theme";
 import ParamLink from "./components/ParamLink";
 import { t } from "./state/i18n";
 
+type Lang = "zh" | "en";
+type StyleKey = "auto" | "meridian" | "classic";
+
+function coerceLang(v: string | null): Lang {
+  return v === "en" ? "en" : "zh";
+}
+
+function coerceStyle(v: string | null): StyleKey {
+  if (v === "meridian" || v === "classic" || v === "auto") return v;
+  return "auto";
+}
+
 function TopNav() {
   const { lang, setLang, style, setStyle } = useLang();
 
@@ -29,7 +41,7 @@ function TopNav() {
           <select
             className="select"
             value={lang}
-            onChange={(e) => setLang(e.target.value === "en" ? "en" : "zh")}
+            onChange={(e) => setLang(coerceLang(e.target.value))}
             aria-label="Language"
           >
             <option value="zh">中文</option>
@@ -39,7 +51,7 @@ function TopNav() {
           <select
             className="select"
             value={style}
-            onChange={(e) => setStyle(e.target.value)}
+            onChange={(e) => setStyle(coerceStyle(e.target.value))}
             aria-label="Theme"
             title="Theme"
           >
@@ -67,7 +79,10 @@ function AntiCopyShield() {
     };
     const onKeyDown = (e: KeyboardEvent) => {
       const key = e.key.toLowerCase();
-      if ((e.ctrlKey || e.metaKey) && (key === "c" || key === "x" || key === "p" || key === "s")) {
+      if (
+        (e.ctrlKey || e.metaKey) &&
+        (key === "c" || key === "x" || key === "p" || key === "s")
+      ) {
         e.preventDefault();
       }
     };
@@ -89,14 +104,17 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const sp = useSearchParams();
   const queryLang = sp.get("lang");
   const queryStyle = sp.get("style") || sp.get("theme");
-  const queryNoCopy = sp.get("copy");
+  const queryCopy = sp.get("copy");
 
-  const initial = useMemo(() => {
-    const lang = queryLang === "en" ? "en" : "zh";
-    const style = queryStyle || "auto";
-    const disableCopy = queryNoCopy === "0" ? false : true;
-    return { lang, style, disableCopy };
-  }, [queryLang, queryStyle, queryNoCopy]);
+  const initial = useMemo(
+    (): { lang: Lang; style: StyleKey; disableCopy: boolean } => {
+      const lang = coerceLang(queryLang);
+      const style = coerceStyle(queryStyle);
+      const disableCopy = queryCopy === "0" ? false : true;
+      return { lang, style, disableCopy };
+    },
+    [queryLang, queryStyle, queryCopy]
+  );
 
   return (
     <LanguageProvider initial={initial}>
