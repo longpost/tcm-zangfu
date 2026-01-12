@@ -272,7 +272,8 @@ function overlaySymptom(base: Symptom, lang: Lang): Symptom {
   if (lang !== "en") return base;
   const over = SYMPTOMS_EN[base.id];
   if (!over) return base;
-  return { ...base, label: over.label, group: over.group };
+  return { ...base, label: over.label };
+
 }
 
 function overlayMapping(base: SymptomMapping, lang: Lang): SymptomMapping {
